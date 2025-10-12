@@ -9,8 +9,8 @@
         "restore": "dotnet restore",
         "build": "dotnet build",
         "test": "cd TrackFlow.Tests && dotnet test",
-        "migrate:update": "cd TrackFlow.Infrastructure && dotnet ef database update --startup-project ../TrackFlow.API",
-        "migrate:add": "cd TrackFlow.Infrastructure && dotnet ef migrations add",
-        "migrate:remove": "cd TrackFlow.Infrastructure && dotnet ef migrations remove"
+        "migrate:update": "dotnet ef database update -p ../TrackFlow.Infrastructure -s .",
+        "migrate:add": " dotnet ef migrations add -p ../TrackFlow.Infrastructure -s .",
+        "migrate:remove": "dotnet ef migrations remove -p ../TrackFlow.Infrastructure -s ."
     }
 }

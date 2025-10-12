@@ -1,0 +1,232 @@
+ENTITY Company {
+  id: UUID PK
+  name: TEXT
+  slug: TEXT UNIQUE
+  created_at, updated_at, deleted_at?
+}
+
+ENTITY User {
+  id: UUID PK
+  email: TEXT UNIQUE
+  password_hash?: TEXT
+  display_name: TEXT
+  timezone?: TEXT
+  created_at, updated_at, deleted_at?
+}
+
+ENTITY Membership {                  // user inside a company (no RBAC logic)
+  id: UUID PK
+  company_id: FK -> Company.id
+  user_id: FK -> User.id
+  title?: TEXT
+  is_active: BOOL DEFAULT true
+  created_at, deactivated_at?
+  UNIQUE(company_id, user_id)
+}
+
+ENTITY Project {
+  id: UUID PK
+  company_id: FK -> Company.id
+  key: TEXT                        // "ENG"
+  name: TEXT
+  description_md?: TEXT
+  created_at
+  UNIQUE(company_id, key)
+}
+
+ENTITY Board {
+  id: UUID PK
+  project_id: FK -> Project.id
+  name: TEXT
+}
+
+ENTITY BoardColumn {
+  id: UUID PK
+  board_id: FK -> Board.id
+  name: TEXT
+  position: INT
+  wip_limit?: INT
+  UNIQUE(board_id, name)
+  UNIQUE(board_id, position)
+}
+
+ENTITY Ticket {
+  id: UUID PK
+  project_id: FK -> Project.id
+  board_column_id: FK -> BoardColumn.id
+  number: INT                         // per-project
+  title: TEXT
+  description_md: TEXT
+  type: ENUM('task','bug','story','epic')
+  priority: ENUM('low','medium','high','critical')
+  reporter_membership_id: FK -> Membership.id
+  assignee_membership_id?: FK -> Membership.id
+  parent_ticket_id?: FK -> Ticket.id  // epics/subtasks
+  estimate_points?: DECIMAL
+  due_at?: TIMESTAMP
+  created_at, updated_at, deleted_at?
+  UNIQUE(project_id, number)
+}
+
+ENTITY Comment {
+  id: UUID PK
+  ticket_id: FK -> Ticket.id
+  author_membership_id: FK -> Membership.id
+  body_md: TEXT
+  is_internal: BOOL DEFAULT false
+  created_at, edited_at?
+}
+
+ENTITY Checklist {                     // simple subtasks
+  id: UUID PK
+  ticket_id: FK -> Ticket.id
+  title: TEXT
+  position: INT
+}
+
+ENTITY ChecklistItem {
+  id: UUID PK
+  checklist_id: FK -> Checklist.id
+  title: TEXT
+  is_done: BOOL DEFAULT false
+  position: INT
+}
+
+ENTITY Label {
+  id: UUID PK
+  project_id: FK -> Project.id
+  name: TEXT
+  color: TEXT
+  position: INT DEFAULT 0
+  UNIQUE(project_id, name)
+}
+
+ENTITY TicketLabel {
+  ticket_id: FK -> Ticket.id
+  label_id: FK -> Label.id
+  PK(ticket_id, label_id)
+}
+
+ENTITY CustomFieldDefinition {         // optional, lightweight
+  id: UUID PK
+  project_id: FK -> Project.id
+  name: TEXT
+  data_type: ENUM('text','number','bool','date','option')
+  is_required: BOOL DEFAULT false
+  UNIQUE(project_id, name)
+}
+
+ENTITY CustomFieldOption {
+  id: UUID PK
+  field_def_id: FK -> CustomFieldDefinition.id
+  value: TEXT
+  label: TEXT
+  position: INT DEFAULT 0
+  UNIQUE(field_def_id, value)
+}
+
+ENTITY CustomFieldValue {              // one value column set based on type
+  ticket_id: FK -> Ticket.id
+  field_def_id: FK -> CustomFieldDefinition.id
+  v_text?: TEXT
+  v_number?: DECIMAL
+  v_bool?: BOOL
+  v_date?: DATE
+  v_option_id?: FK -> CustomFieldOption.id
+  PK(ticket_id, field_def_id)
+}
+
+ENTITY TicketEvent {                   // minimal audit trail
+  id: UUID PK
+  ticket_id: FK -> Ticket.id
+  actor_membership_id: FK -> Membership.id
+  field: TEXT                         // 'status','assignee','title',...
+  from_value?: TEXT
+  to_value?: TEXT
+  created_at
+}
+
+/* ---------- File & Image Storage (simple, scalable) ---------- */
+
+ENTITY FileObject {                    // content-addressable file (dedupe)
+  id: UUID PK
+  sha256_hex: TEXT UNIQUE              // hash of raw content
+  byte_size: BIGINT
+  content_type: TEXT                   // 'image/png','application/pdf',...
+  storage_provider: ENUM('s3','gcs','azure','local')
+  storage_key: TEXT                    // bucket/path or provider key
+  created_at
+  width_px?: INT                       // for images
+  height_px?: INT
+  duration_ms?: INT                    // for audio/video
+  // store only metadata here; actual bytes live in object storage
+}
+
+ENTITY FileVariant {                   // thumbnails/transcodes linked to original
+  id: UUID PK
+  original_file_id: FK -> FileObject.id
+  purpose: ENUM('thumbnail','preview','webp','av1','mp3','pdf-preview')
+  width_px?: INT
+  height_px?: INT
+  byte_size: BIGINT
+  content_type: TEXT
+  storage_provider: ENUM('s3','gcs','azure','local')
+  storage_key: TEXT
+  created_at
+  UNIQUE(original_file_id, purpose, width_px, height_px)
+}
+
+ENTITY EntityAttachment {              // polymorphic link: attach files anywhere
+  id: UUID PK
+  company_id: FK -> Company.id         // tenant safety
+  file_id: FK -> FileObject.id
+  entity_type: ENUM('project','ticket','comment','user','company')
+  entity_id: UUID                      // FK to the entity's PK (validated at app)
+  uploaded_by_membership_id: FK -> Membership.id
+  title?: TEXT
+  note_md?: TEXT
+  created_at
+  // Optional convenience uniques (e.g., prevent exact duplicate on same entity):
+  // UNIQUE(company_id, entity_type, entity_id, file_id)
+}
+
+/* Convenience narrow tables if you prefer no polymorphic link:
+ENTITY TicketAttachment {
+  id: UUID PK
+  ticket_id: FK -> Ticket.id
+  file_id: FK -> FileObject.id
+  uploaded_by_membership_id: FK -> Membership.id
+  title?: TEXT
+  note_md?: TEXT
+  created_at
+}
+*/
+
+/* ---------- Minimal “activity” & “favorites” (optional niceties) ---------- */
+
+ENTITY Activity {
+  id: UUID PK
+  company_id: FK -> Company.id
+  actor_membership_id: FK -> Membership.id
+  verb: ENUM('created','updated','commented','moved','attached','closed','reopened')
+  object_type: ENUM('project','ticket','comment','file')
+  object_id: UUID
+  meta_json?: JSONB
+  created_at
+}
+
+ENTITY Star {                           // quick pin/favorite for users
+  id: UUID PK
+  user_id: FK -> User.id
+  entity_type: ENUM('project','ticket')
+  entity_id: UUID
+  created_at
+  UNIQUE(user_id, entity_type, entity_id)
+}
+
+/* ---------- Ticket numbering per project (simple & safe) ---------- */
+
+ENTITY ProjectCounter {
+  project_id: FK -> Project.id PK
+  next_ticket_number: INT
+}

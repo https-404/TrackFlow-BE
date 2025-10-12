@@ -1,0 +1,6 @@
+@TrackFlow.API_HostAddress = http://localhost:5265
+
+GET {{TrackFlow.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

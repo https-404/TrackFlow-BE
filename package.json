@@ -1,0 +1,16 @@
+{
+    "name": "trackFlow-backend",
+    "version": "1.0.0",
+    "description": "Backend for TrackFlow application",
+    "main": "TrackFlow.API/Program.cs",
+    "scripts": {
+        "run": "cd TrackFlow.API && dotnet run",
+        "dev": "cd TrackFlow.API && dotnet watch run",
+        "restore": "dotnet restore",
+        "build": "dotnet build",
+        "test": "cd TrackFlow.Tests && dotnet test",
+        "migrate:update": "cd TrackFlow.Infrastructure && dotnet ef database update --startup-project ../TrackFlow.API",
+        "migrate:add": "cd TrackFlow.Infrastructure && dotnet ef migrations add",
+        "migrate:remove": "cd TrackFlow.Infrastructure && dotnet ef migrations remove"
+    }
+}

@@ -7,8 +7,14 @@ namespace TrackFlow.API.Controllers;
 public class AuthController : Controller
 {
     [HttpPost("signup")]
-    public IActionResult Post()
+    public IActionResult Signup()
     {
-        return View();
+        return Ok();
+    }
+
+    [HttpPost("signin")]
+    public IActionResult SignIn()
+    {
+        return Ok();
     }
 }

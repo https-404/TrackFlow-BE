@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TrackFlow.Domain.Interfaces.IRepository;
+using TrackFlow.Infrastructure.Repository;
 
 namespace TrackFlow.Infrastructure.DI;
 
@@ -13,9 +15,11 @@ public static class DependencyInjection
         
         // Register repositories
         // services.AddScoped<IYourRepo, YourRepo>();
-
+        services.AddScoped<IUserRepository, UserRepository>();
+        
         // Register services
         // services.AddScoped<IYourService, YourService>();
+        
 
         return services;
     }

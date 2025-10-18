@@ -4,8 +4,8 @@ public class User : BaseEntity
 {
     // Use Id from BaseEntity
     
-    public string PasswordHash { get; set; }
-    public string Email { get; set; }
+    public string PasswordHash { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
     public Profile? Profile { get; set; }
     public ICollection<UserOrganization> UserOrganizations { get; set; } = new List<UserOrganization>();
 

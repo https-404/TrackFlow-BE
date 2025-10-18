@@ -8,7 +8,9 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.10" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9"/>
+        <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.14.0" />
         <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
@@ -19,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\TrackFlow.Application\TrackFlow.Application.csproj" />
       <ProjectReference Include="..\TrackFlow.Infrastructure\TrackFlow.Infrastructure.csproj" />
     </ItemGroup>
 

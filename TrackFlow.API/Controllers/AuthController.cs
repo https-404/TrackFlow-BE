@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using TrackFlow.Application.Common;
+using TrackFlow.Application.DTOs.Auth;
+using TrackFlow.Application.Services.Interface;
 
 namespace TrackFlow.API.Controllers;
 
@@ -6,15 +9,21 @@ namespace TrackFlow.API.Controllers;
 [Route("api/auth")]
 public class AuthController : Controller
 {
-    [HttpPost("signup")]
-    public IActionResult Signup()
+    private readonly IAuthService _authService;
+
+    public AuthController(IAuthService authService)
     {
-        return Ok();
+        _authService = authService;
+    }
+    [HttpPost("signup")]
+    public async Task<ApiResponse<AuthResponse>> Signup([FromBody] RegisterDTO registerDto)
+    {
+        return await _authService.RegisterAsync(registerDto);
     }
 
     [HttpPost("signin")]
-    public IActionResult SignIn()
+    public async Task<ApiResponse<AuthResponse?>> SignIn([FromBody] LoginDTO body)
     {
-        return Ok();
+        return await _authService.LoginAsync(body);
     }
 }

@@ -16,7 +16,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrackFlow.Infrastructure", "TrackFlow.Infrastructure\TrackFlow.Infrastructure.csproj", "{6786D7C0-3B03-4B0B-AF91-218D364973F8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A1B2AD12-894E-41AA-B506-60BDE7B490B5} = {A1B2AD12-894E-41AA-B506-60BDE7B490B5}
-		{28F193B8-99D1-429C-9180-ACCF442FE205} = {28F193B8-99D1-429C-9180-ACCF442FE205}
 	EndProjectSection
 EndProject
 Global

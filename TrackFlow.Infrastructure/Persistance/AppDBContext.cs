@@ -30,7 +30,7 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<User>()
             .HasOne(u => u.Profile)
-            .WithOne(p => p.user)
-            .HasForeignKey<Profile>(p => p.Id);
+            .WithOne(p => p.User)
+            .HasForeignKey<Profile>(p => p.UserId);
     }
 }

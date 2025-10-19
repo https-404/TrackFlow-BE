@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace TrackFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251019001627_UpdateProfileNullability")]
+    partial class UpdateProfileNullability
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,7 +61,6 @@ namespace TrackFlow.Infrastructure.Migrations
             modelBuilder.Entity("TrackFlow.Domain.Entities.Profile", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<string>("CoverPhotoURL")
@@ -89,9 +91,6 @@ namespace TrackFlow.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("text");
@@ -105,9 +104,6 @@ namespace TrackFlow.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
 
                     b.ToTable("Profiles");
                 });
@@ -192,13 +188,13 @@ namespace TrackFlow.Infrastructure.Migrations
 
             modelBuilder.Entity("TrackFlow.Domain.Entities.Profile", b =>
                 {
-                    b.HasOne("TrackFlow.Domain.Entities.User", "User")
+                    b.HasOne("TrackFlow.Domain.Entities.User", "user")
                         .WithOne("Profile")
-                        .HasForeignKey("TrackFlow.Domain.Entities.Profile", "UserId")
+                        .HasForeignKey("TrackFlow.Domain.Entities.Profile", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("user");
                 });
 
             modelBuilder.Entity("TrackFlow.Domain.Entities.UserOrganization", b =>
